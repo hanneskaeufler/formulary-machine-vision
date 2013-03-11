@@ -1,0 +1,260 @@
+\documentclass[a4paper,12pt,pdftex]{scrreprt}
+
+\title{Formelsammlung Machine Vision}
+\author{Hannes Käufler}
+\date{2013}
+
+%
+%	Neue Rechtschreibung und korrekte Silbentrennung
+%
+\usepackage[german, ngerman]{babel}
+
+%
+%	Umlaute korrekt darstellen
+%
+\usepackage[utf8]{inputenc}
+
+%
+%	Matrizen, Symbole ...
+%
+\usepackage{mathcomp}
+\usepackage{amsmath}
+
+\begin{document}
+	\chapter{Introduction} % (fold)
+	\label{cha:introduction}
+	% chapter introduction (end)
+
+	\chapter{Image Preprocessing} % (fold)
+	\label{cha:image_preprocessing}
+	
+	\section{Convolution} % (fold)
+	\label{sec:convolution}
+	For two continuous functions f and g, the convolution is defined as\\
+	\boxed{(f*g)(x)=\int_{-\infty}^{\infty}g(\tau)f(x-\tau)d\tau}
+	being commutative, associative and linear. 
+	% section convolution (end)
+
+	\section{Fourier Transform} % (fold)
+	\label{sec:fourier_transform}
+	The Fourier transform of $f$ is given by:\\
+	\boxed{\hat{f}(k):=\int_{-\infty}^{\infty}f(x)e^{-2\pi ikx}dx}
+	With the inverese Fourier transform:\\
+	\boxed{{f}(x):=\int_{-\infty}^{\infty}\hat{f}(k)e^{2\pi ikx}dk}
+	% section fourier_transform (end)
+
+	\section{Impulse Functions} % (fold)
+	\label{sec:impulse_functions}
+	Dirac impulse:
+	\boxed{\delta(x)=
+		\begin{cases}
+			0 & if x \neq 0 \\
+			\infty & if x = 0 \\
+		\end{cases}}
+	with \boxed{\int_{-\infty}^{\infty}\delta(x)dx=1}\\
+	And a series of Dirac impulses:
+	\boxed{\sum_{n=-\infty}^{\infty}\delta(x-nT)}
+	% section impulse_functions (end)
+
+	\section{Nyquist Sampling Theorem} % (fold)
+	\label{sec:nyquist_sampling_theorem}
+	If $f$ is band bounded with cutoff frequency $k_{0}$
+	$\hat{f}(k)=0$ for all $k$ with $\lvert k \rvert \geq k_{0}$\\
+	then it is completely determined by giving its ordinates at a series of points spaced at most
+	$\frac{1}{2k_{0}}$\\ 
+	meaning the sample frequency must be larger than $2k_{0}$
+	% section nyquist_sampling_theorem (end)
+
+	\section{Quantisation} % (fold)
+	\label{sec:quantisation}
+	Characteristic with equidistant steps of size $\Delta$\\
+	\boxed{g(x)=max\{0,min\{g_{max},\left\lfloor \frac{I(x)}{\Delta}+\frac{1}{2} \right\rfloor\}\}}\\
+	\boxed{h(x)=\Delta g(x)-\frac{\Delta}{2}}\\
+	yielding an error of non-overdriven quantiser:\\
+	\boxed{I(x)-h(x) \in{[-\frac{\Delta}{2},\frac{\Delta}{2}]} }
+	% section quantisation (end)
+	
+	\section{Gamma Correction} % (fold)
+	\label{sec:gamma_correction}
+	\boxed{g_{out}=g_{max}\left( \frac{g_{in}}{g_{max}} \right)^{\gamma}} which keeps black and white, is a nonlinear transformation
+	% section gamma_correction (end)
+
+	\section{Models of Blur} % (fold)
+	\label{sec:models_of_blur}
+	Blur can be modeled with convolution\\
+	\boxed{g_{blurred}=g_{sharp}*p} with $p$ modeling the blur\\
+	\boxed{p_{motion}(x)=
+		\begin{cases}
+			\frac{1}{n} & if -n<x \leq 0 \\
+			0 & otherwise \\
+		\end{cases}} along x-axis by $n$ pixels\\
+	\boxed{p_{Gauss}(x)=\frac{1}{\sqrt{2\pi \sigma^{2}}}e^{-\frac{1}{2}\frac{x^{2}}{\sigma^{2}}} }
+	% section models_of_blur (end)
+
+	\section{Wiener Deconvoution} % (fold)
+	\label{sec:wiener_deconvoution}
+	Restore a sharp image from a blurred image with a Wiener filter:
+	\boxed{g_{blurred}=g_{sharp}*p+v} with $p$ being a point-spread function (blur), $v$ being pixel noise and assuming $g_{sharp}$ and $v$ being independent.\\
+	With \boxed{g_{restored}=f*g_{blurred}}, find optimal $f$ that minimizes\\
+	\boxed{e(k)=E\left[ \lvert \hat{g}_{sharp}(k)-\hat{g}_{restored}(k) \rvert^2 \right]} with $E$ being the expectation value.
+	% section wiener_deconvoution (end)
+
+	\section{Models of Noise} % (fold)
+	\label{sec:models_of_noise}
+	Statistical noise: \boxed{g_{noisy}(x,y)=g_{sharp}(x,y)+v(x,y)}\\
+	Malfunctioning sensors: \boxed{g_{noisy}(x,y)=\begin{cases} g_{sharp}(x,y) & with \; probability \; p \\ arbitrary & otherwise \\ \end{cases}}
+	% section models_of_noise (end)
+	% chapter image_preprocessing (end)
+
+	\chapter{Edge-Detection} % (fold)
+	\label{cha:edge_detection}
+	
+	\section{Finding Edges} % (fold)
+	\label{sec:finding_edges}
+	Approximating a derivative by difference:
+	\boxed{\frac{\partial g}{\partial x} \approx \frac{g(x+1)-g(x-1)}{2}}
+	% section finding_edges (end)
+
+	\section{Laplace Operator} % (fold)
+	\label{sec:laplace_operator}
+	The 2D analogon to the second order derivatie is the Laplace operator:\\
+	\boxed{\bigtriangledown^{2}g=\frac{\partial^{2} g}{(\partial x)^{2}}+\frac{\partial^{2} g}{(\partial y)^{2}}} which can be appriximated with\\
+	\boxed{\bigtriangledown^{2}g\approx g(x+1,y)+g(x-1,y)+g(x,y+1)+g(x,y-1)-4g(x,y)}\\
+	Because the second order derivative is very noisy, so combine Laplacian with Gaussian smoothing:\\
+	\boxed{\bigtriangledown^{2}(G*g)=(\bigtriangledown^{2}G)*g} which yields \\
+	\boxed{\bigtriangledown^{2}G=\frac{x^{2}+y^{2}-2\sigma^{2}}{\sigma^{4}}G(x,y)} called Laplacian of Gaussian (LoG) or Mexican Hat\\
+	The Laplacian of Gaussian can be approximated by calculating the Difference of Gaussian (DoG)\\
+	\boxed{DoG(x,y)=G_{\sigma_{1}}(x,y)-G_{\sigma_{2}}(x,y)}
+	% section laplace_operator (end)
+	
+	\section{Corner Detection} % (fold)
+	\label{sec:corner_detection}
+	Using dissimilarity measure to find patches of maximal dissimilarity for local moves:\\
+	\boxed{d:= 
+		\sum_{(u,v)\in rectangle}(g(u+\Delta u,v+\Delta v)-g(u,v))^{2} \approx \left ( \begin{array}{c}
+			\Delta u \\ \Delta v \\
+		\end{array} \right )^{T}
+		\left ( \begin{array}{cc}
+			\sum (\frac{\partial g}{u})^{2} & \sum \frac{\partial g}{u} \frac{\partial g}{v} \\ 
+			\sum \frac{\partial g}{u} \frac{\partial g}{v} & \sum (\frac{\partial g}{v})^{2} \\
+		\end{array} \right )
+		\left ( \begin{array}{cc}
+			\Delta u \\ \Delta v \\
+		\end{array} \right )
+	}\\
+	For special choice of coordinate system it becomes a diagonal matrix:\\
+	\boxed{d:=
+		\left ( \begin{array}{c}
+			\Delta u \\ \Delta v \\
+		\end{array} \right )^{T}
+		\left (
+		\begin{array}{cc}
+			\lambda_{1} & 0 \\
+			0 & \lambda_{2}
+		\end{array} \right )
+		\left ( \begin{array}{cc}
+			\Delta u \\ \Delta v \\
+		\end{array} \right )
+		= \lambda_{1}(\Delta u)^{2}+\lambda_{2}(\Delta v)^{2} \; \: w.l.o.g. \; \: \lambda_{1} \geq \lambda_{2} \geq 0
+	}
+	% section corner_detection (end)
+	% chapter edge_detection (end)
+	
+	\chapter{Curve Fitting} % (fold)
+	\label{cha:curve_fitting}
+	
+	\section{2D Geometry of Lines} % (fold)
+	\label{sec:2d_geometry}
+	Line in normal form: \boxed{0=\langle \vec{n},\vec{x} \rangle +c} so the distance of a point $\vec{r}$ from the line:\\
+	\boxed{d=\| \vec{l}-\vec{r} \| = \lvert \langle \vec{n},\vec{r} \rangle +c \rvert}
+	% section 2d_geometry (end)
+
+	\section{Hough Transform} % (fold)
+	\label{sec:hough_transform}
+	Every line in 2D can be represented as: \boxed{x\:cos \phi + y\:sin \phi + c = 0} so there is a 2D space of all line represented by $(\phi,c)$ called Hough Space.
+	% section hough_transform (end)
+
+	\section{Total Least Squares} % (fold)
+	\label{sec:total_least_squares}
+	To estimate a line through a set of points we need to search the line parameters that minimise $d_{i}$\\
+	\boxed{minimise \sum_{i=1}^{N} d_{i}^{2} \; subject \; to \; \langle \vec{n}, \vec{n} \rangle=1}
+	Using the Lagrange function:\\
+	\boxed{L(\vec{n},c,\lambda)=\sum_{i=1}^{n} d_{i}^{2} - \lambda(\langle \vec{n},\vec{n} \rangle -1)} then zeroing the partian derivative with respect to c and then to n, we can arrive at\\
+	\boxed{
+		\left ( \begin{array}{cc}
+			\alpha & \beta \\
+			\beta & \gamma \\
+		\end{array}	\right )
+		\vec{n} = \lambda \vec{n}
+	} hence $\lambda$ is Eigenvalue and $\vec{n}$ is Eigenvector. We get two solutions of Eigenvalue Problem: \boxed{\lambda_{1} \geq \lambda_{2} \geq 0} where $\lambda_{2}$ minimises distances and $\lambda_{1}$ maximises distances
+	% section total_least_squares (end)
+
+	\section{Weighted Least Squares} % (fold)
+	\label{sec:weighted_least_squares}
+	Because of outliers introduce weights $w_i \geq 0$, one for each edge point, then solve:\\
+	\boxed{minimise \sum_{i=1}^{N} w_{i} d_{i}^{2} \; subject \; to \; \langle \vec{n}, \vec{n} \rangle=1}.
+	But how to choose $w_{i}$? Replace $d_{i}$ by a term that grows more slowly!
+	% section weighted_least_squares (end)
+
+	\section{M-Estimators} % (fold)
+	\label{sec:m_estimators}
+	M-Estimator means 
+	\boxed{minimise \sum_{i=1}^{N} \rho(d_{i}) \; subject \; to \; \langle \vec{n}, \vec{n} \rangle=1} with a suitable function $\rho$\\
+	The derivatives of the Lagrange function of M-Estimators approach and Weighted Least Squares approach are equal if \boxed{w_{i}=\frac{\frac{\partial \rho(d_{i})}{\partial d_{i}}}{2d_{i}}}. So running Weighted Least Squares with appropriate weights implements M-Estimators. E.g.:\\
+	\boxed{\rho_{Cauchy}: d \mapsto c^{2} log(1+\frac{d^{2}}{c^{2}})}\\
+	\boxed{\rho_{Huber}: d \mapsto 
+		\begin{cases}
+			d^{2} & if \lvert d \rvert \leq k \\
+			2k \lvert d \rvert - k^{2} & otherwise \\
+		\end{cases}}
+	% section m_estimators (end)
+
+	\section{Least Trimmed Sum of Squares Estimator (LTS)} % (fold)
+	\label{sec:least_trimmed_sum_of_squares_estimator_}
+	\boxed{minimise \sum_{i=1}^{p} d_{i:N} \; subject \; to \; \langle \vec{n}, \vec{n} \rangle=1} with $p<N$ and $d_{i:N}$ the i-th element in the ordered list of point-distances. $p$ is typically given as a percentage of N.
+	% section least_trimmed_sum_of_squares_estimator_ (end)
+
+	\section{RANSAC} % (fold)
+	\label{sec:ransac}
+	Search a line that passes nearby as many points as possible.\\
+	\boxed{minimise \sum_{i=1}^{N} \sigma(d_{i}) \; with \; \sigma(d_{i})= \begin{cases}
+		0 & if \lvert d_{i} \rvert \leq \theta \\
+		1 & if \lvert d_{i} \rvert > \theta\\
+	\end{cases}}
+	% section ransac (end)
+
+	\section{Estimating Circles} % (fold)
+	\label{sec:estimating_circles}
+	Parametric representation of circles:\\
+	\boxed{(x-m_{1})^{2}+(y-m_{2})^{2}-r^{2}=0}\\
+	Euclidean distance of point (x,y) from the circle:\\
+	\boxed{d_{E}=\left \lvert \sqrt{(x-m_{1})^{2}+(y-m_{2})^{2}}-r \right \rvert}\\
+	Algebraic distance:\\
+	\boxed{d_{A}=\left \lvert (x-m_{1})^{2}+(y-m_{2})^{2}-r^{2} \right \rvert}
+	Because minimising the Euclidean distance cannot be solved analytically, minimalize the sum of algebraic distances. Use a weighted approach, chose $w_{i}$ so that we implement Euclidien by using weighted Algebraic.
+	% section estimating_circles (end)
+	% chapter curve_fitting (end)
+
+	\chapter{Color} % (fold)
+	\label{cha:color}
+	% chapter color (end)
+
+	\chapter{Segmentation} % (fold)
+	\label{cha:segmentation}
+	
+	\section{Level Set Evolution} % (fold)
+	\label{sec:level_set_evolution}
+	% section level_set_evolution (end)
+
+	\section{Mumford-Shah} % (fold)
+	\label{sec:mumford_shah}
+	Shrink contour if \boxed{(I-C_{in})^{2} > (I-C_{out})^{2}}\\
+	Expand contour if \boxed{(I-C_{in})^{2} < (I-C_{out})^{2}}\\
+	Mumford-Shah based segmentation:\\
+	\boxed{\frac{\partial \vec{x}}{\partial t}=\frac{\bigtriangledown \phi}{\| \bigtriangledown \phi \|} (C+P-\lambda_{1}(I-C_{in})^{2}+\lambda_{2}(I-C_{out})^{2})}
+
+	% section mumford_shah (end)
+
+	% chapter segmentation (end)
+
+\end{document}
