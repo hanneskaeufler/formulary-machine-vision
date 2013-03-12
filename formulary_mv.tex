@@ -244,6 +244,14 @@
 	
 	\section{Level Set Evolution} % (fold)
 	\label{sec:level_set_evolution}
+	Two class segmentation can be represented by indicatior function:\\
+	\boxed{\phi(\vec{x}) \begin{cases}
+		< 0 & if\:pixel\:\vec{x}\:belongs\:to\:segment\\
+		> 0 & if\:pixel\:\vec{x}\:belongs\:to\:background\\
+	\end{cases}} with \boxed{\lvert \phi(\vec{x}) \rvert = distance\:of\:\vec{x}\:from\:contour}\\
+	Modeling temporal evolution of signed distance function with \boxed{\phi(\vec{x},t)}. When tracking a point \boxed{\vec{x}(t)} on the boundary over time, it obviously follows \boxed{\phi(\vec{x}(t),t)=0\:for\:all\:t}\\
+	\boxed{0=\frac{d\phi(\vec{x}(t),t)}{dt}=\bigtriangledown \phi \frac{\partial \vec{x}}{\partial t}+\frac{\partial \phi}{\partial t}}. Solving this for $\frac{\partial \phi}{\partial t}$ yields:\\
+	\boxed{\frac{\partial \phi}{\partial t}=-\bigtriangledown \phi \frac{\partial \vec{x}}{\partial t}}
 	% section level_set_evolution (end)
 
 	\section{Mumford-Shah} % (fold)
@@ -252,9 +260,293 @@
 	Expand contour if \boxed{(I-C_{in})^{2} < (I-C_{out})^{2}}\\
 	Mumford-Shah based segmentation:\\
 	\boxed{\frac{\partial \vec{x}}{\partial t}=\frac{\bigtriangledown \phi}{\| \bigtriangledown \phi \|} (C+P-\lambda_{1}(I-C_{in})^{2}+\lambda_{2}(I-C_{out})^{2})}
-
 	% section mumford_shah (end)
-
 	% chapter segmentation (end)
+
+	\chapter{Camera Optics} % (fold)
+	\label{cha:camera_optics}
+
+	\section{World To Image Mapping} % (fold)
+	\label{sec:world_to_image_mapping}
+	
+	Point $(x,y,z)$ is projected onto $(x',y')$ via intercept theorem:\\
+	\boxed{z\left(
+		\begin{array}{c}
+			x'\\
+			y'\\
+		\end{array}
+		\right) = \left(
+		\begin{array}{cc}
+			f & 0\\
+			0 & f\\	
+		\end{array} \right) \left(
+		\begin{array}{c}
+			x\\
+			y\\
+		\end{array} \right)
+	}\\
+	Mapping from camera to image frame:\\
+	\boxed{
+		\left(
+		\begin{array}{c}
+			u\\
+			v\\
+		\end{array}
+		\right) = \left(
+		\begin{array}{cc}
+			\alpha & -\beta cot\theta\\
+			0 & \frac{\beta}{sin\theta}\\	
+		\end{array} \right) \left(
+		\begin{array}{c}
+			x'\\
+			y'\\
+		\end{array} \right) + \left(
+		\begin{array}{c}
+			u_{0}\\
+			v_{0}\\
+		\end{array} \right)
+	}\\
+	Mapping from world to camera frame:\\
+	\boxed{
+		\left(
+		\begin{array}{c}
+			x\\
+			y\\
+			z\\
+		\end{array} \right)=
+		R \left(
+		\begin{array}{c}
+			\xi\\
+			\eta\\
+			\zeta\\
+		\end{array} \right) + \vec{t}
+	}\\
+	Rewriting all those, given $(\xi,\eta,\zeta)$ we can calculate $(u,v)$ by\\
+	\boxed{
+		\left(
+		\begin{array}{c}
+			\tilde{x}\\
+			\tilde{y}\\
+			\tilde{z}\\
+		\end{array} \right)= A \left ( R \mid \vec{t} \right) \left(
+		\begin{array}{c}
+			\xi\\
+			\eta\\
+			\zeta\\
+			1\\
+		\end{array} \right)
+	} and 
+	\boxed{
+		\left(
+		\begin{array}{c}
+			u\\
+			v\\
+		\end{array} \right) = \frac{1}{\tilde{z}} \left(
+		\begin{array}{c}
+			\tilde{x}\\
+			\tilde{y}\\
+		\end{array} \right)
+	}\\
+	The other way round, we can obtain $(\xi,\eta,\zeta)$ given $(u,v)$ by\\
+	\boxed{
+		\left(
+		\begin{array}{c}
+			\xi\\
+			\eta\\
+			\zeta\\
+		\end{array} \right)= z R^{T} A^{-1} \left(
+		\begin{array}{c}
+			u\\
+			v\\
+			1\\
+		\end{array} \right) - R^{T}\vec{t}\;\;\;with\:z\leq 0
+	}
+	% section world_to_image_mapping (end)
+
+	\section{Snell´s law} % (fold)
+	\label{sec:snell_s_law}
+	\boxed{n_{e}sin\theta_{e}=n_{t}sin\theta_{t}} with \boxed{n_{medium}=\frac{v_{vacuum}}{v_{medium}}}
+	% section snell_s_law (end)
+
+	\section{Thin lenses} % (fold)
+	\label{sec:thin_lenses}
+	Via Intercept theorem, we get the lens equation:\\
+	\boxed{\frac{1}{f}=\frac{1}{b}+\frac{1}{g}}
+	% section thin_lenses (end)
+
+	\section{Depth of Field} % (fold)
+	\label{sec:depth_of_field}
+	Via intercept theorem with:\\
+	\boxed{\bigtriangledown g=g_{far}-g_{near}=2\frac{g d_{h}(g-f)}{d_{h}^{2}-(g-f)^{2}}} with \boxed{d_{h}=\frac{Df}{\epsilon}} as hyperfocal distance.
+	% section depth_of_field (end)
+
+	\section{Radial Distortion} % (fold)
+	\label{sec:radial_distortion}
+	Mathematical modeling with even polynominals:\\
+	\boxed{\left(
+		\begin{array}{c}
+			x_{d}\\
+			y_{d}\\
+		\end{array} \right)=(1+k_{1}r^{2}+k_{2}r^{4})\left(
+		\begin{array}{c}
+			x'\\
+			y'\\
+		\end{array} \right)} with $r^{2}=(x')^{2}+(y')^{2}$
+	% section radial_distortion (end)
+
+	\section{Camera Calibration} % (fold)
+	\label{sec:camera_calibration}
+	Tsai´s approach:\\
+	From world-to-image-mapping take $M:=A\left(R\mid\vec{t}\right)$ in which M is a 3x4 matrix.\\
+	Determine camera parameters by minimizing sum of squares, which means zeroing partial derivaties.\\
+	% section camera_calibration (end)
+
+	\section{Telecentric Lenses} % (fold)
+	\label{sec:telecentric_lenses}
+	Maginification of telecentric lens: \boxed{B=\frac{b-f}{f}G}\\
+	Depth of field:\boxed{\bigtriangledown g=2\frac{\epsilon}{D}(g-f)}
+	% section telecentric_lenses (end)
+	% chapter camera_optics (end)
+
+	\chapter{Illumination} % (fold)
+	\label{cha:illumination}
+	Irradiance of a surface point, meaning amount of incident light:\\
+	\boxed{I(\theta_{i},\phi_{i})}\\
+	Radiance of a surface point, meaning amount of emitted light:\\
+	\boxed{I(\theta_{e},\phi_{e})}\\
+	Total irradiance of a surface patch (in sperical coordinates):\\
+	\boxed{I_{0}=\int_{0}^{2\pi}\int_{0}^{\frac{\pi}{2}}I(\theta_{i},\phi_{i})sin\theta_{i}cos\theta_{i}d\theta_{i}d\phi_{i}}\\
+	Reflectance of a surface patch can be modeled by the bidirectional reflectance distribution function (BRDF):\\
+	\boxed{f(\theta_{e},\phi_{e}\mid\theta_{i},\phi_{i})} describing how much light is radiated in direction $(\theta_{e},\phi_{e})$ if one unit of light is irradiated from direction $(\theta_{i},\phi_{i})$
+
+	\section{Reflectance} % (fold)
+	\label{sec:reflectance}
+	So total amount of radiated light:\\
+	\boxed{I_{0}=\int_{0}^{2\pi}\int_{0}^{\frac{\pi}{2}}f(\theta_{e},\phi_{e}\mid\theta_{i},\phi_{i})I(\theta_{i},\phi_{i})sin\theta_{i}cos\theta_{i}d\theta_{i}d\phi_{i}}\\
+	Lambertian Reflectance:\\
+	\boxed{f(\theta_{e},\phi_{e}\mid\theta_{i},\phi_{i})=\frac{1}{\pi}} hence: \boxed{L(\theta_{e},\phi_{e})=\frac{1}{\pi}L_{0}}\\
+	Specular Reflectance, mirroring effect:\\
+	\boxed{f(\theta_{e},\phi_{e}\mid\theta_{i},\phi_{i})=\frac{\delta(\theta_{e}-\theta_{i})\delta(\phi_{e}-\phi_{i}-\pi)}{sin\theta_{i}cos\theta_{i}}} hence:
+	\boxed{L(\theta_{e},\phi_{e})=I(\theta_{e},\phi_{e}-\pi)}
+	Combinations of Reflectance:\\
+	\boxed{f(\theta_{e},\phi_{e}\mid\theta_{i},\phi_{i})=\frac{\eta}{\pi}+(1-\eta)\frac{\delta(\theta_{e}-\theta_{i})\delta(\phi_{e}-\phi_{i}-\pi)}{sin\theta_{i}cos\theta_{i}}}
+	% section reflectance (end)
+	% chapter illumination (end)
+
+	\chapter{3D Reconstruction} % (fold)
+	\label{cha:3d_reconstruction}
+
+	\section{Stereovision by Triangulation} % (fold)
+	\label{sec:stereovision_by_triangulation}
+	For camera 1:\\
+	\boxed{
+		\left(
+		\begin{array}{c}
+			\xi\\
+			\eta\\
+			\zeta\\
+		\end{array} \right)=
+		z R^{T} A^{-1} \left(
+		\begin{array}{c}
+			u\\
+			v\\
+			1\\
+		\end{array} \right) - R^{T} \vec{t}
+	} with unknown depth $z$\\
+	Same for camera 2 and equaling:\\
+	\boxed{z\vec{p}-\vec{q}=z'\vec{p}'-\vec{q}'} is overdetermined, lines of sight might be skewed. Minimize square of norm instead!\\
+	% section stereovision_by_triangulation (end)
+
+	\section{Phase Shift} % (fold)
+	\label{sec:phase_shift}
+	Measure gray value of pixel 4 times with phase shift multiples of $\frac{\pi}{2}$:\\
+	\boxed{g_{i}=A\;sin\left( \frac{u}{w}2\pi + \dotsb \right)+B} with wavelength $w$. Solve for A and B.\\
+	\boxed{u=\frac{atan2(g_{1}-g_{3},g_{2}-g_{4})}{2\pi}w+kw} only if $A\neq0$
+	% section phase_shift (end)
+	% chapter 3d_reconstruction (end)
+
+	\chapter{Pattern Recognition} % (fold)
+	\label{cha:pattern_recognition}
+
+	\section{Bayesian Classification} % (fold)
+	\label{sec:bayesian_classification}
+	assign new object to the class with the largest posteriori probability:\\
+	\boxed{\hat{c}=arg\:max\:P(c \mid x_{new})} and \boxed{P(c \mid x) \propto P(x \mid c)P(c)}
+	% section bayesian_classification (end)
+
+	\section{Linear Classification} % (fold)
+	\label{sec:linear_classification}
+	A linear classifier is a function that implements a function of the kind:\\
+	\boxed{\vec{x}\mapsto \begin{cases}
+		+1 & if \langle \vec{x},\vec{w} \rangle + b \geq 0\\
+		-1 & otherwise
+	\end{cases}} with $\vec{w}$ the weight vector and $b$ the bias weight.\\
+	Margin, meaning the minimal distance between a hyperplane and the convex hull of the training patterns:\\
+	\boxed{\rho=min \left( d^{(i)}\frac{\langle \vec{x}^{(i)},\vec{w} \rangle + b}{\| \vec{w} \|} \right)}\\
+	% section linear_classification (end)
+	
+	\section{Support Vector Machine} % (fold)
+	\label{sec:support_vector_machine}
+	SVM is a linear classifier that maximizes the margin $\rho$. Training a SVM means solving:\\
+	\boxed{maximize\quad\rho^{2}\quad subject\;to\quad d^{(i)}\frac{\langle \vec{x}^{(i)},\vec{w} \rangle +b}{\| \vec{w} \|}\geq \rho \qquad for\;all\;i}\\
+	Where $\| \vec{w} \|$ is a degree of freedom, so set $\| \vec{w} \| = \frac{1}{\rho}$ for convenience. That leaves us to:\\
+	\boxed{minimize\quad \frac{1}{2} \| \vec{w} \|^{2}\quad subject\;to\quad d^{(i)} (\langle \vec{x}^{(i)},\vec{w} \rangle +b)\geq 1 \qquad for\:all\: i}
+	% section support_vector_machine (end)
+
+	\section{Fault-tolerant SVM} % (fold)
+	\label{sec:fault_tolerant_svm}
+	Soft margin SVM:\\
+	\boxed{minimize\quad \frac{1}{2} \| \vec{w} \|^{2} + C\sum_{i} \xi_{i}\quad subject\;to\quad d^{(i)} (\langle \vec{x}^{(i)},\vec{w} \rangle +b)\geq 1-\xi_{i} \qquad for\:all\: i}
+	% section fault_tolerant_svm (end)
+
+	\section{Nonlinear SVM} % (fold)
+	\label{sec:nonlinear_svm}
+	Assume nonlinear transformation:\\
+	\boxed{\theta : \begin{cases}
+		R^{n} \to R^{m}\\
+		\vec{x} \mapsto \theta(\vec{x}) = \vec{X}\\
+	\end{cases}}\\
+	Useful kerner-functions are:\\
+	\boxed{K(\vec{x},\vec{y}) = \langle \vec{x},\vec{y} \rangle} dot product\\
+	\boxed{K(\vec{x},\vec{y}) = (\langle \vec{x}, \vec{y} \rangle)^{d}\quad or \quad (\langle \vec{x}, \vec{y} \rangle +1)^{d}} polynominal kernels\\
+	\boxed{K(\vec{x},\vec{y}) = e^{-\frac{\| \vec{x} - \vec{y} \|^{2}}{2\sigma^{2}}}}
+	% section nonlinear_svm (end)
+
+	\section{Validation Process} % (fold)
+	\label{sec:validation_process}
+	Expected risk of misclassification: risk of false negative + risk of false positiv\\
+	\boxed{E=\int_{A-}P(+)p_{+}(x)dx + \int_{A+}P(-)p_{-}(x)dx}\\
+	Which is unknown but can be approximated by\\
+	\boxed{E \approx \frac{n_{fn}+n_{fp}}{n}}, where $n$ is the number of elements in the sample set, $n_{fp}$ is the number of false positives in the sample set, $n_{fn}$ is the number of false negatives in the sample set.
+	% section validation_process (end)
+
+	\section{Haar Features} % (fold)
+	\label{sec:haar_features}
+	Calculating Haar features the naive way:\\
+	\boxed{s=\sum_{u=u_{0}}^{u_{0}+w-1} \sum_{v=v_{0}}^{v_{0}+h-1} g(u,v)}\\
+	The integral image:\boxed{I(x,y):=\sum_{u=0}^{x} \sum_{v_0}^{y} g(u,v)} makes calculating s simply a 4-way lookup on I:\\
+	\boxed{s=I(u_{0}+w-1,v_{0}+h-1)-I(u_{0}-1,v_{0}+h-1)+I(u_{0}-1,v_{0}-1)-I(u_{0}+w-1,v_{0}-1)}
+	% section haar_features (end)
+
+	\section{Ensembles} % (fold)
+	\label{sec:ensembles}
+	Sum up all predictions and compare with zero:\\
+	\boxed{ensemble(\vec{x})=sign\left( \sum_{j=1}^{k} c_{i}(\vec{x}) \right)}
+	% section ensembles (end)
+
+	\section{Boosting} % (fold)
+	\label{sec:boosting}
+	Introduce weight $\gamma_{i}$ for each training pattern, applied to e.g. soft margin SVM this yields:\\
+	\boxed{minimize\quad \frac{1}{2} \| \vec{w} \|^{2} + C\sum_{i} \gamma_{i} \xi_{i}\quad subject\;to\quad d^{(i)} (\langle \vec{x}^{(i)},\vec{w} \rangle +b)\geq 1-\xi_{i} \qquad for\:all\: i}
+	% section boosting (end)
+
+	\section{AdaBoost} % (fold)
+	\label{sec:adaboost}
+	Is an implementation of Boosting. With the training error bounded to\\
+	\boxed{\Pi_{t=1}^{T}\left( 2\sqrt{\epsilon_{t}(1-\epsilon_{t})}\right) \leq exp \left\{ -2 \sum_{t=1}^{T} (\frac{1}{2}-\epsilon_{t})^{2} \right\}}\\
+	If all $\epsilon_{t} < \frac{1}{2}$ and $T \to \infty$ AdaBoost yields a perfect classifier.
+	% section adaboost (end)
+
+	% chapter pattern_recognition (end)
 
 \end{document}
